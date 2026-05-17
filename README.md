@@ -1,4 +1,4 @@
-# Enable Claude Fork-Agent
+# <u>Enable-[Claude](https://github.com/Kirchlive/Enable-Claude-Fork-Agent)-Fork-Agent</u>
 
 > A one-shot setup that switches Claude Code's default subagent dispatch from "fresh context with lossy briefing" to **fork-mode with inherited context** — and teaches Claude to keep it that way through skill.
 

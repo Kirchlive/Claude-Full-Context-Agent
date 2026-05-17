@@ -16,7 +16,7 @@ bash install.sh
 .\install.ps1
 ```
 
-After installation, new command `/fork` is now available and `prefer-fork-agents` listed under `/skills`.
+After installation and claude code restart, a new command `/fork` is now available and `prefer-fork-agents` listed under `/skills`.
 Once skill has been activated, every new agent will startet with full session context by default. 
 
 ---

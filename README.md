@@ -2,7 +2,7 @@
 
 > A one-shot setup that switches Claude Code's default subagent dispatch from "fresh context with lossy briefing" to **fork-mode with inherited context** — and teaches Claude to keep it that way through skill.
 
-<img src="https://i.imgur.com/lAlbdZv.png" alt="IMG" width="800">
+<img src="https://i.imgur.com/lAlbdZv.png" alt="IMG" width="750">
 
 
 ```bash

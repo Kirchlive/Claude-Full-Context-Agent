@@ -1,6 +1,6 @@
 # <u>Enable-[Claude](https://github.com/Kirchlive/Enable-Claude-Fork-Agent)-Fork-Agent</u>
 
-Full setup switches Claude Code's default subagent dispatch with flawed improvisation behavior due to a lack of context - to **Fork Agent mode with full session context** and Claude skill set for correct use and operation.
+Full setup switches Claude Code's default subagent dispatch with flawed improvisation behavior due to a lack of context to **Fork Agent mode with full session context** and Claude skill set for correct use and operation.
 
 <img src="https://i.imgur.com/lAlbdZv.png" alt="IMG" width="750">
 

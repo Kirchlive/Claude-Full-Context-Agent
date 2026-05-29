@@ -17,9 +17,7 @@ This Plugin switches Claude Code's default subagent process, from flawed behavio
 
 Restart Claude Code.
 
-The command detects your platform and runs the matching bundled installer:
-- macOS / Linux / WSL / Git Bash → `install.sh` (requires `python3` for safe JSON merging)
-- Windows (PowerShell 7+) → `install.ps1` (native JSON handling, no Python)
+---
 
 ### Manual (without the marketplace)
 

@@ -36,9 +36,12 @@ Dispatch forks as a single batch, not sequentially. Each fork gets:
 
 ```
 Agent(description="<task-3-5-words>",
+      subagent_type="fork",
       isolation="worktree",
       prompt="<focused brief with output contract>")
 ```
+
+**`subagent_type: "fork"` is required** (verified in Claude Code v2.1.177). Omitting it silently dispatches a `general-purpose` subagent without inherited context — the fan-out would lose its cache-share advantage and each worker would need a full briefing. The load-bearing verification is the first line of the sidechain JSONL at `~/.claude/projects/<project>/<session>/subagents/agent-<id>.jsonl`: if `type == "fork-context-ref"`, it's a real fork. Fork-originated assistant turns also carry `"attributionAgent":"fork"`, but the first transcript line is the cheapest single check.
 
 For read-only fan-outs (research, analysis, reporting) worktree isolation is unnecessary — forks share the parent's working directory in read-only mode and produce no merge conflicts.
 

@@ -1,27 +1,27 @@
 # UPDATE — Fork-Guard False-Positive (Claude Code v2.1.177)
 
-> **Status:** Workaround angewandt in dieser Plugin-Version (Skill-Source-Patch).
-> **Upstream-Fix:** ausstehend — Bug liegt im Claude-Code-Runtime, nicht im Plugin.
+> **Status:** workaround applied in this plugin version (skill-source patch).
+> **Upstream fix:** pending — the bug is in the Claude Code runtime, not in the plugin. Tracked at [anthropics/claude-code#68233](https://github.com/anthropics/claude-code/issues/68233).
 
 ## TL;DR
 
-In Claude Code **v2.1.177** schlägt jeder Fork-Dispatch in einer Top-Level-Session fehl mit:
+On Claude Code **v2.1.177**, every fork dispatch from a top-level session fails with:
 
 ```
 Fork is not available inside a forked worker. Complete your task directly using your tools.
 ```
 
-— obwohl die Session nachweislich kein Fork ist (`CLAUDE_CODE_FORK_SUBAGENT=1` gesetzt, JSONL-Header `last-prompt` statt `fork-context-ref`).
+— even though the session is provably *not* a fork (`CLAUDE_CODE_FORK_SUBAGENT=1` is set, and the session JSONL starts with `last-prompt` rather than `fork-context-ref`).
 
-Ursache: Der Runtime-Guard, der Fork-Recursion verhindert, macht einen naiven Substring-Scan auf den Tag `<fork-boilerplate` in der gesamten User-Message-History. Die Skill-Doku-Texte dieses Plugins (`prefer-fork-agents/SKILL.md`, `fan-out-fork-agents/SKILL.md`) enthielten diesen Tag wörtlich in ihrer Self-Check-Erklärung — beim Skill-Invoke landeten die Texte als `tool_result` in user-Messages und triggern den Guard fälschlich.
+Root cause: the runtime's fork-recursion guard does a naive substring scan for the tag `‹fork-boilerplate` across the entire user-message history. The previous skill texts in this plugin (`prefer-fork-agents/SKILL.md`, `fan-out-fork-agents/SKILL.md`) described that tag literally in their Self-Check sections. On every skill invocation, those texts landed in user-messages as `tool_result` blocks and falsely triggered the guard.
 
-## Der Guard (aus dem Claude-Code-Binary, v2.1.177)
+## The guard (from the Claude Code v2.1.177 binary)
 
 ```js
-// Konstante
+// constant
 z7H = "fork-boilerplate"
 
-// Guard
+// guard
 function $m_(messages) {
   return messages.some(m => {
     if (m.type !== "user") return false;
@@ -33,7 +33,7 @@ function $m_(messages) {
   });
 }
 
-// Dispatch-Check (Agent-Tool)
+// Agent-tool dispatch check
 if (z.options.querySource === `agent:builtin:${Zx.agentType}` || $m_(z.messages)) {
   throw new gTH(
     "Fork is not available inside a forked worker. Complete your task directly using your tools."
@@ -41,56 +41,58 @@ if (z.options.querySource === `agent:builtin:${Zx.agentType}` || $m_(z.messages)
 }
 ```
 
-**Bug:** `text.includes("<fork-boilerplate")` ist ein blinder Substring-Match. Jeder Text in jeder user-Message, der die Zeichenfolge enthält — Skill-Dokumentation, Memory-Dumps, CLAUDE.md-Inhalte, Bug-Reports — löst den Guard aus. Korrekt wäre: Match nur auf die strukturelle Position (erste Sidechain-User-Turn der Fork-Session) oder auf ein eindeutiges Wrapper-Format.
+**Bug:** `text.includes("‹fork-boilerplate")` (shown here with Unicode angles so this file itself doesn't poison your session — the real check uses ASCII `<`) is a blind substring match. Any text in any user-message containing that sequence — skill documentation, memory dumps, CLAUDE.md content, bug reports — triggers the guard. The correct behavior would be a structural match: either on the precise position (first sidechain user turn of the fork session) or on a unique wrapper format.
 
-## Reproduktion
+## Reproduction
 
-Frische Top-Level-Session:
+In a fresh top-level session:
 
 ```bash
-echo $CLAUDE_CODE_FORK_SUBAGENT   # → 1
-# /skill prefer-fork-agents (Skill-Output enthält "<fork-boilerplate>" 4×)
-# Anschließend Agent-Tool-Call mit subagent_type:"fork"
+echo $CLAUDE_CODE_FORK_SUBAGENT     # → 1
+# /skill prefer-fork-agents  (the v1.0.2 skill output contains the literal tag 4×)
+# then any Agent-tool call with subagent_type: "fork"
 # → Error: "Fork is not available inside a forked worker."
 ```
 
-Verifikation, dass es kein echter Fork ist:
+To verify the session is **not** actually a fork:
 
 ```bash
 head -1 ~/.claude/projects/<project>/<session-id>.jsonl
-# → {"type":"last-prompt", ...}   (NICHT "fork-context-ref")
+# → {"type":"last-prompt", ...}   (NOT "fork-context-ref")
 ```
 
-## Fix in diesem Plugin (v1.0.2-patch)
+## The fix in this plugin (v2.0.0)
 
-In beiden Skill-Files den Tag `<fork-boilerplate>` durch Unicode-Angles `‹fork-boilerplate›` (U+2039 / U+203A) ersetzt:
+In both skill files, the literal ASCII-angle tag is replaced with the Unicode-angle-bracket form `‹fork-boilerplate›` (U+2039 / U+203A):
 
 ```diff
-- A `<fork-boilerplate>` block appears in your prompt
+- A `‹fork-boilerplate›` block appears in your prompt
 + A `‹fork-boilerplate›` block appears in your prompt
 ```
 
-Betroffene Dateien:
-- `skills/prefer-fork-agents/SKILL.md` (4 Vorkommen)
-- `skills/fan-out-fork-agents/SKILL.md` (1 Vorkommen)
+(The diff renders identically here because both sides use Unicode angles in this document — the actual replacement in the skill sources was ASCII `<…>` → Unicode `‹…›`.)
 
-Semantik bleibt erhalten (Self-Check-Lesbarkeit für Forks unverändert), Guard-Match bricht (Substring `<fork-boilerplate` nicht mehr enthalten).
+Affected files:
+- `skills/prefer-fork-agents/SKILL.md` (4 occurrences)
+- `skills/fan-out-fork-agents/SKILL.md` (1 occurrence)
 
-## Recovery für bestehende Sessions
+Semantics are preserved (the Self-Check section remains readable for fork-workers), but the guard substring no longer matches.
 
-Wenn der Bug eine **bereits laufende Session** verseucht hat (Skill-Output bereits in der Message-History), reicht der Source-Patch nicht — die Skill-Outputs liegen als `tool_result` in der Session-JSONL und werden beim nächsten Resume wieder geladen.
+## Recovery for already-poisoned sessions
 
-### Schritt 1 — Session-JSONL patchen
+If the bug has already polluted a **running session** (skill output already in the message history), patching the sources is not enough — the skill outputs sit as `tool_result` blocks in the session JSONL and are reloaded on the next resume.
+
+### Step 1 — patch the session JSONL
 
 ```bash
 SESSION=~/.claude/projects/<project>/<session-id>.jsonl
 cp "$SESSION" "$SESSION.bak"
 python3 -c "
-import sys
 path = '$SESSION'
 with open(path) as f:
     data = f.read()
-data = data.replace('<fork-boilerplate', '‹fork-boilerplate›'.split('›')[0])
+# Replace both opening and closing literal angles with Unicode angles
+data = data.replace('<fork-boilerplate', '‹fork-boilerplate')
 data = data.replace('fork-boilerplate>', 'fork-boilerplate›')
 with open(path, 'w') as f:
     f.write(data)
@@ -98,44 +100,44 @@ with open(path, 'w') as f:
 grep -c '<fork-boilerplate' "$SESSION"   # → 0
 ```
 
-### Schritt 2 — Claude Code mit Resume neu starten
+### Step 2 — restart Claude Code with resume
 
 ```bash
 claude --resume <session-id>
 ```
 
-Beim Resume liest Claude die gepatchten Messages aus der JSONL. Der In-Memory-State des **laufenden** Prozesses lässt sich nicht patchen — Restart ist Pflicht.
+On resume, Claude reads the patched messages from the JSONL. The in-memory state of the **running** process cannot be patched — a restart is mandatory.
 
-### Schritt 3 — Verifizieren
+### Step 3 — verify
 
 ```
 Agent(subagent_type:"fork", description:"test", prompt:"Echo: alive")
 # → Async agent launched successfully.
 ```
 
-## Was den Guard alles triggert (Warn-Liste)
+## What else triggers the guard (warn-list)
 
-Jede der folgenden Quellen löst false-positives aus, sobald ihr Inhalt als user-Message in der History landet:
+Any of the following sources will produce false-positives as soon as their content lands in a user-message:
 
-- Skill-Dokumentation, die den Tag literal beschreibt
-- Memory-Dumps / Auto-Memory-Indizes, die vergangene Fork-Investigationen zitieren
-- Bug-Reports oder CLAUDE.md-Einträge, die `<fork-boilerplate>` als Beispiel zeigen
-- Kopierte Transkripte aus echten Fork-Sessions, die der User in ein Prompt einfügt
+- Skill documentation that describes the tag literally
+- Memory dumps / auto-memory indexes that cite past fork investigations
+- Bug reports or CLAUDE.md entries that show the tag as an example
+- Pasted transcripts from real fork sessions that the user inserts into a prompt
 
-**Faustregel beim Schreiben von Doku/Skills:** Den literalen Tag `<fork-boilerplate>` nie unmaskiert in Plaintext, der als Tool-Result oder User-Input landen könnte. Stattdessen: Unicode-Angles `‹fork-boilerplate›`, HTML-Entities `&lt;fork-boilerplate&gt;`, Backticks-Inline mit Leerzeichen `< fork-boilerplate >`, oder Umschreibung.
+**Rule of thumb for skill/doc authors:** never write the literal tag unescaped into any plaintext that could land as a tool result or user input. Use Unicode angles `‹fork-boilerplate›`, HTML entities `&lt;fork-boilerplate&gt;`, an inline backtick form with a space `< fork-boilerplate >`, or a paraphrase.
 
-## Upstream-Empfehlung an Anthropic
+## Recommended upstream fix (to Anthropic)
 
-Der Guard sollte strukturell prüfen, nicht textuell:
+The guard should be structural rather than textual:
 
-1. **Position-basiert:** Nur die erste Sidechain-User-Turn auf den Boilerplate-Marker prüfen — das ist die einzige Position, an der das Runtime den Tag tatsächlich injiziert.
-2. **Marker-Eindeutigkeit:** Den injizierten Tag um ein nicht-rateBares Suffix erweitern (z.B. `<fork-boilerplate session-uuid="...">`) und Match auf das vollständige Pattern.
-3. **Session-Metadata first:** `querySource === "agent:builtin:fork"` ist bereits ein eindeutiges Signal — der Substring-Check als Fallback ist redundant und fehleranfällig.
+1. **Position-based:** only check the first sidechain user turn for the boilerplate marker — that is the single position where the runtime actually injects the tag.
+2. **Marker uniqueness:** extend the injected tag with a non-guessable suffix (e.g., a session-uuid attribute) and match the full pattern.
+3. **Trust the metadata:** `querySource === "agent:builtin:fork"` is already a definitive signal — promote it to authoritative and drop the substring fallback (or keep it as a debug-only assertion).
 
-Issue-Tracker: <https://github.com/anthropics/claude-code/issues>
+Issue tracker: <https://github.com/anthropics/claude-code/issues/68233>
 
-## Versionierung
+## Versioning
 
-- **Betroffen:** Claude Code v2.1.177 (möglicherweise frühere v2.1.x — nicht verifiziert)
-- **Plugin-Patch:** `Claude-Full-Context-Agent` 1.0.2, angewandt 2026-06-13
-- **Aufzuheben sobald:** Anthropic den Guard auf strukturellen Match umstellt; bis dahin den Patch in allen Skill-Sources behalten.
+- **Affected:** Claude Code v2.1.177 (possibly earlier v2.1.x — not verified)
+- **Plugin patch:** `Claude-Full-Context-Agent` v2.0.0, released 2026-06-13
+- **Lift this workaround once:** Anthropic switches the guard to a structural match; until then, keep the escape in every skill source.

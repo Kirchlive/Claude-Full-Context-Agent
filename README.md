@@ -4,6 +4,9 @@ This Plugin switches Claude Code's default subagent process, from flawed context
 
 <img src="https://i.imgur.com/tnjhkDJ.png" alt="IMG" width="750">
 
+> **v2.0.0 (2026-06-13) — Critical fix for Claude Code v2.1.177.**
+> If you ran v1.0.2 on Claude Code v2.1.177 and saw `Fork is not available inside a forked worker.` on every dispatch, this was an upstream runtime bug triggered by the literal boilerplate tag (`‹fork-boilerplate›`, shown here with Unicode angles so this README itself doesn't poison your session) in the previous skill texts. v2.0.0 escapes the tag everywhere so it no longer false-positive-matches the runtime's recursion guard. See [`UPDATE.md`](UPDATE.md) for the full root-cause and recovery steps for already-poisoned sessions.
+
 **Install:**
 ```
 /plugin marketplace add Kirchlive/Claude-Full-Context-Agent

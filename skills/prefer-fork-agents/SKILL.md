@@ -6,9 +6,24 @@ when_to_use: User says "start an agent", "spawn a researcher", "delegate", "disp
 
 # Prefer Fork Agents
 
+## Self-check: are you the fork?
+
+**Before applying any rule below, check your own role.** If any of these are true, you ARE a fork-worker:
+
+- A `‹fork-boilerplate›` block appears in your prompt
+- You were explicitly told "you are the fork, execute directly"
+- Your session metadata shows `fork-context-ref` / `attributionAgent: fork`
+- Attempting `Agent(subagent_type:"fork", …)` returns `Fork is not available inside a forked worker`
+
+**If you are the fork:** the default-to-fork rule and the entire fan-out machinery in this skill do NOT apply to you. Execute the task directly with your existing tools (Read, Bash, Edit, Grep, etc.). Do NOT attempt to spawn further agents — neither fork nor named — because the runtime `‹fork-boilerplate›` directive forbids any `Agent`-tool spawn from inside a fork, not just recursive forks. This rule overrides every "default-to-fork" sentence that follows.
+
+**If you are the parent (top-level session):** the rules below apply normally.
+
+This self-check exists because forks inherit the parent's active skills. Without it, a fork would read the "default to fork" mandate, attempt to spawn — and hit the no-recursion guard. The skill's own inheritance is the source of the failure; this block neutralizes it.
+
 ## What a fork agent is
 
-A fork agent is a Claude Code subagent that inherits the parent's full conversation state — system prompt, message history, active skills, tool definitions, CLAUDE.md, and the project's prompt cache. It runs with its own fresh 200K context window on top of that inherited state. The schema difference from a normal subagent is `subagent_type: "fork"` on the Agent tool call. Forks cannot spawn further forks (no recursion — a `<fork-boilerplate>` system instruction is injected that explicitly forbids it) and are mutually exclusive with coordinator mode.
+A fork agent is a Claude Code subagent that inherits the parent's full conversation state — system prompt, message history, active skills, tool definitions, CLAUDE.md, and the project's prompt cache. It runs with its own fresh 200K context window on top of that inherited state. The schema difference from a normal subagent is `subagent_type: "fork"` on the Agent tool call. Forks cannot spawn further forks (no recursion — a `‹fork-boilerplate›` system instruction is injected that explicitly forbids it) and are mutually exclusive with coordinator mode.
 
 ## Invocation
 
@@ -38,7 +53,14 @@ A fork agent is a Claude Code subagent that inherits the parent's full conversat
 }
 ```
 
-**Important — verified in Claude Code v2.1.177:** omitting `subagent_type` does NOT trigger fork mode; it falls back silently to `general-purpose` (a fresh agent with no inherited context). The trigger is the literal string `"fork"` in the `subagent_type` field. Verification signatures of a real fork in the session JSONL: first transcript line is `{"type":"fork-context-ref", ...}`, every assistant turn carries `"attributionAgent":"fork"`, and the first user turn includes a `<fork-boilerplate>` block. If any of those is missing, the dispatch was a named subagent, not a fork.
+**Important — verified in Claude Code v2.1.177:** omitting `subagent_type` does NOT trigger fork mode; it falls back silently to `general-purpose` (a fresh agent with no inherited context). The trigger is the literal string `"fork"` in the `subagent_type` field.
+
+Verification signatures of a real fork in the session JSONL at `~/.claude/projects/<project>/<session>/subagents/agent-<id>.jsonl`:
+1. **First line** is `{"type":"fork-context-ref", "parentSessionId":..., "parentLastUuid":..., "contextLength":...}` — this is the load-bearing signal that the fork inherited the parent's context.
+2. **First sidechain user turn** (typically line 3) contains a `‹fork-boilerplate›` block injecting the no-recursion directive and worker rules.
+3. **Fork-originated assistant turns** carry `"attributionAgent":"fork"`. Note that line 2 is the parent's carried-over Agent tool_use call and does NOT carry this field — that absence is structural, not a failure signal.
+
+Fastest single check: if line 1's `type` is `"fork-context-ref"`, it's a real fork. The other signatures only matter when debugging a suspected fallback.
 
 ## If a fork dispatch errors (fork mode not enabled)
 

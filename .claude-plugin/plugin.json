@@ -1,7 +1,7 @@
 {
   "name": "Claude-Full-Context-Agent",
   "description": "This Plugin switches Claude Code's default subagent process, from shortcoming context behavior, to fork-agents-mode with full session context, including Claude Skills for correct use of forks and worktrees.",
-  "version": "1.0.2",
+  "version": "2.0.0",
   "author": {
     "name": "Kirchlive"
   },
@@ -9,3 +9,11 @@
   "keywords": ["agent", "fork", "skill", "claude", "anthropic", "agent-orchestration", "claude-code", "subagents", "context-engineering", "claude-skills", "fork-agent"],
   "skills": ["./skills/prefer-fork-agents", "./skills/fan-out-fork-agents"]
 }
+
+
+
+
+
+
+Agents: code-simplifier
+

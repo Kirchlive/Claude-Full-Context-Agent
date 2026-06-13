@@ -6,7 +6,11 @@ when_to_use: User says "parallel agents", "multiple forks", "fan-out", "spawn N 
 
 # Fork Fan-Out
 
-This skill covers the *operational* layer of multi-fork dispatch — what to do when fanning out to multiple parallel forks. Decision criteria for "fork vs named subagent" live in `prefer-fork-agents`. This skill assumes that decision is already made and forks have been chosen.
+## Self-check: are you the fork?
+
+**Before applying any fan-out rule below, check your own role.** If a `‹fork-boilerplate›` block is in your prompt, you were told "you ARE the fork", or your session has `fork-context-ref` / `attributionAgent: fork` — you are a fork-worker. The entire fan-out machinery in this skill (dispatch lifecycle, registry, worktree isolation, federation pattern) applies ONLY to the parent/top-level session. As a fork you must execute your task directly with existing tools and not spawn any further agents — the runtime `‹fork-boilerplate›` directive forbids any `Agent`-tool spawn from inside a fork. See `prefer-fork-agents` → "Self-check: are you the fork?" for the full rationale.
+
+This skill covers the *operational* layer of multi-fork dispatch — what to do when fanning out to multiple parallel forks. Decision criteria for "fork vs named subagent" live in `prefer-fork-agents`. This skill assumes that decision is already made, forks have been chosen, and the dispatcher is the parent session.
 
 ## If a fork dispatch errors (fork mode not enabled)
 

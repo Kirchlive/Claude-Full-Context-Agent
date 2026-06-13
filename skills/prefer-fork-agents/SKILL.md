@@ -1,6 +1,6 @@
 ---
 name: prefer-fork-agents
-description: Defines the project's subagent delegation policy — prefer fork-mode dispatch (inherits full conversation context, shares prompt cache) over named subagents whenever a delegated task benefits from already-established context. CLAUDE_CODE_FORK_SUBAGENT=1 is active in this environment. Omitting subagent_type from the Agent/Task call is the trigger for fork mode. Default-deny mindset for named subagents — if you cannot articulate why a named subagent is required, dispatch a fork. Apply this skill EVERY time you are about to call the Agent/Task tool, EVERY time you reason about subagent_type, EVERY time the user requests delegated/parallel/background agent work, and BEFORE fanning out to multiple agents in parallel. For multi-fork orchestration (worktrees, fan-out coordination, reporting contracts), defer to the fork-fan-out skill.
+description: Defines the project's subagent delegation policy — prefer fork-mode dispatch (inherits full conversation context, shares prompt cache) over named subagents whenever a delegated task benefits from already-established context. CLAUDE_CODE_FORK_SUBAGENT=1 is active in this environment. Setting `subagent_type: "fork"` explicitly on the Agent/Task call is the trigger for fork mode (verified empirically in Claude Code v2.1.177 — omission falls back to general-purpose). Default-deny mindset for named subagents — if you cannot articulate why a named subagent is required, dispatch a fork. Apply this skill EVERY time you are about to call the Agent/Task tool, EVERY time you reason about subagent_type, EVERY time the user requests delegated/parallel/background agent work, and BEFORE fanning out to multiple agents in parallel. For multi-fork orchestration (worktrees, fan-out coordination, reporting contracts), defer to the fork-fan-out skill.
 when_to_use: User says "start an agent", "spawn a researcher", "delegate", "dispatch a subagent", "run a research", "investigate X", "analyze Y in parallel", "agent für", or any phrasing that implies subagent dispatch. Also: any time you are internally considering subagent_type values like general-purpose, researcher, or a custom agent name, or contemplating parallel work across multiple problems.
 ---
 
@@ -8,23 +8,24 @@ when_to_use: User says "start an agent", "spawn a researcher", "delegate", "disp
 
 ## What a fork agent is
 
-A fork agent is a Claude Code subagent that inherits the parent's full conversation state — system prompt, message history, active skills, tool definitions, CLAUDE.md, and the project's prompt cache. It runs with its own fresh 200K context window on top of that inherited state. The only schema difference from a normal subagent is the absence of `subagent_type` in the Agent tool call. Forks cannot spawn further forks (no recursion) and are mutually exclusive with coordinator mode.
+A fork agent is a Claude Code subagent that inherits the parent's full conversation state — system prompt, message history, active skills, tool definitions, CLAUDE.md, and the project's prompt cache. It runs with its own fresh 200K context window on top of that inherited state. The schema difference from a normal subagent is `subagent_type: "fork"` on the Agent tool call. Forks cannot spawn further forks (no recursion — a `<fork-boilerplate>` system instruction is injected that explicitly forbids it) and are mutually exclusive with coordinator mode.
 
 ## Invocation
 
-**Fork (the default in this environment).** Omit `subagent_type`:
+**Fork.** Set `subagent_type: "fork"` explicitly:
 
 ```
 {
   "name": "Agent",
   "input": {
     "description": "Brief label, 3-5 words",
+    "subagent_type": "fork",
     "prompt": "Directive: WHAT to do. Do not repeat context the fork already inherits — be terse and scope-focused. The fork has read everything we have read and discussed everything we have discussed."
   }
 }
 ```
 
-**Named subagent (exception case).** Include `subagent_type`:
+**Named subagent (exception case).** Include the named `subagent_type`:
 
 ```
 {
@@ -37,7 +38,7 @@ A fork agent is a Claude Code subagent that inherits the parent's full conversat
 }
 ```
 
-That presence/absence of `subagent_type` is the entire trigger mechanism. Everything else (context inheritance, cache sharing, prompt style) follows from it.
+**Important — verified in Claude Code v2.1.177:** omitting `subagent_type` does NOT trigger fork mode; it falls back silently to `general-purpose` (a fresh agent with no inherited context). The trigger is the literal string `"fork"` in the `subagent_type` field. Verification signatures of a real fork in the session JSONL: first transcript line is `{"type":"fork-context-ref", ...}`, every assistant turn carries `"attributionAgent":"fork"`, and the first user turn includes a `<fork-boilerplate>` block. If any of those is missing, the dispatch was a named subagent, not a fork.
 
 ## If a fork dispatch errors (fork mode not enabled)
 
@@ -116,6 +117,7 @@ Agent(description="research superpowers",
 Correct move (fork — the parent already knows what Superpowers is from this conversation):
 ```
 Agent(description="GitHub research on Superpowers",
+      subagent_type="fork",
       prompt="Research the obra/superpowers repo on GitHub. Return: feature list, recent release notes, comparison to the alternatives we already discussed.")
 ```
 
@@ -128,7 +130,7 @@ Right before you emit an Agent/Task tool call, ask the three questions in order:
 1. **Is this a parallelizable batch?** Apply the "When to parallelize at all" criteria. If no, single dispatch. If yes, plan the fan-out before issuing calls — consult `fork-fan-out` for orchestration.
 
 2. **Per worker, does the task benefit from current conversation context?**
-   - Yes → fork (omit `subagent_type`)
+   - Yes → fork (set `subagent_type: "fork"` explicitly)
    - No, and it's a cheap read-only search → `subagent_type: "Explore"`
    - No, and it's a deliberately fresh second opinion → named subagent with full briefing per cases 1/4
    - Otherwise → fork

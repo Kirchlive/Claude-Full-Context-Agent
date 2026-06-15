@@ -55,10 +55,10 @@ jobs:
 
       - name: --dry-run leaves no new mutations
         run: |
-          before="$(stat -f %m "$HOME/.claude/settings.json" 2>/dev/null || stat -c %Y "$HOME/.claude/settings.json")"
+          before="$(stat -c %Y "$HOME/.claude/settings.json" 2>/dev/null || stat -f %m "$HOME/.claude/settings.json")"
           sleep 1
           bash install.sh --dry-run
-          after="$(stat -f %m "$HOME/.claude/settings.json" 2>/dev/null || stat -c %Y "$HOME/.claude/settings.json")"
+          after="$(stat -c %Y "$HOME/.claude/settings.json" 2>/dev/null || stat -f %m "$HOME/.claude/settings.json")"
           test "$before" = "$after"
 
       - name: --uninstall --yes restores backup

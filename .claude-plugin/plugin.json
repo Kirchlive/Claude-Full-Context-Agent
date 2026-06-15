@@ -1,5 +1,5 @@
 {
-  "name": "Claude-Full-Context-Agent",
+  "name": "Full-Context-Fork-Agent",
   "description": "This Plugin switches Claude Code's default subagent process, from shortcoming context behavior, to fork-agents-mode with full session context, including Claude Skills for correct use of forks and worktrees.",
   "version": "2.0.0",
   "author": {

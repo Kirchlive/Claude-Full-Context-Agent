@@ -1,5 +1,5 @@
 #!/usr/bin/env pwsh
-# Enable-Claude-Fork-Agent — post-install verification.
+# Full-Context-Fork-Agent — post-install verification.
 # Exits 0 if all checks pass, non-zero otherwise.
 
 $ErrorActionPreference = 'Continue'
@@ -24,7 +24,7 @@ function Check([string]$label, [bool]$ok) {
     }
 }
 
-Write-Host 'Enable-Claude-Fork-Agent verification'
+Write-Host 'Full-Context-Fork-Agent verification'
 Write-Host '====================================='
 
 # 1. settings.json exists and parses as JSON

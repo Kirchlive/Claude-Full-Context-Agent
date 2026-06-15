@@ -14,7 +14,7 @@ This skill covers the *operational* layer of multi-fork dispatch — what to do 
 
 ## If a fork dispatch errors (fork mode not enabled)
 
-Fork mode needs `CLAUDE_CODE_FORK_SUBAGENT=1` in `~/.claude/settings.json`, read at startup. A plugin can't set it. If a fork dispatch errors with this unset, tell the user to run `/Claude-Full-Context-Agent:doctor` — it runs the bundled installer for their OS (sets the var, installs skills) — then restart Claude Code. One-time; later sessions already have it.
+Fork mode needs `CLAUDE_CODE_FORK_SUBAGENT=1` in `~/.claude/settings.json`, read at startup. A plugin can't set it. If a fork dispatch errors with this unset, tell the user to run `/Full-Context-Fork-Agent:doctor` — it runs the bundled installer for their OS (sets the var, installs skills) — then restart Claude Code. One-time; later sessions already have it.
 
 ## The fan-out lifecycle
 

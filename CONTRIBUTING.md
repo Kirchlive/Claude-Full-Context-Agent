@@ -42,8 +42,8 @@ A PR that ships a new or edited skill without the RED-phase transcript will be m
 ## Development setup
 
 ```bash
-git clone https://github.com/Kirchlive/Enable-Claude-Fork-Agent.git
-cd Enable-Claude-Fork-Agent
+git clone https://github.com/Kirchlive/Full-Context-Fork-Agent.git
+cd Full-Context-Fork-Agent
 # Hack on install.sh, skills/, etc.
 bash install.sh --dry-run  # confirm intended actions without touching ~/.claude/
 ```

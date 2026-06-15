@@ -70,8 +70,8 @@ body:
       description: Minimal sequence of commands that triggers the bug.
       render: bash
       placeholder: |
-        1. git clone https://github.com/Kirchlive/Enable-Claude-Fork-Agent.git
-        2. cd Enable-Claude-Fork-Agent
+        1. git clone https://github.com/Kirchlive/Full-Context-Fork-Agent.git
+        2. cd Full-Context-Fork-Agent
         3. bash install.sh
         4. observe: ...
     validations:

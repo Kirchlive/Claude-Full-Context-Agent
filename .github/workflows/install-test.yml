@@ -43,7 +43,7 @@ jobs:
       - name: Assert skills installed
         run: |
           test -f "$HOME/.claude/skills/prefer-fork-agents/SKILL.md"
-          test -f "$HOME/.claude/skills/fork-fan-out/SKILL.md"
+          test -f "$HOME/.claude/skills/fan-out-fork-agents/SKILL.md"
 
       - name: Assert backup file produced when re-running
         run: |
@@ -65,7 +65,7 @@ jobs:
         run: |
           bash install.sh --uninstall --yes
           ! test -d "$HOME/.claude/skills/prefer-fork-agents"
-          ! test -d "$HOME/.claude/skills/fork-fan-out"
+          ! test -d "$HOME/.claude/skills/fan-out-fork-agents"
 
   windows:
     name: install.ps1 (windows-latest)
@@ -104,7 +104,7 @@ jobs:
         shell: pwsh
         run: |
           if (-not (Test-Path (Join-Path $HOME '.claude/skills/prefer-fork-agents/SKILL.md'))) { throw "missing prefer-fork-agents" }
-          if (-not (Test-Path (Join-Path $HOME '.claude/skills/fork-fan-out/SKILL.md'))) { throw "missing fork-fan-out" }
+          if (-not (Test-Path (Join-Path $HOME '.claude/skills/fan-out-fork-agents/SKILL.md'))) { throw "missing fan-out-fork-agents" }
 
       - name: --check reports installed state
         shell: pwsh
@@ -127,4 +127,4 @@ jobs:
         run: |
           ./install.ps1 -Uninstall -Yes
           if (Test-Path (Join-Path $HOME '.claude/skills/prefer-fork-agents')) { throw "skill not removed" }
-          if (Test-Path (Join-Path $HOME '.claude/skills/fork-fan-out')) { throw "skill not removed" }
+          if (Test-Path (Join-Path $HOME '.claude/skills/fan-out-fork-agents')) { throw "skill not removed" }

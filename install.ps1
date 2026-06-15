@@ -1,5 +1,5 @@
 #!/usr/bin/env pwsh
-# Enable-Claude-Fork-Agent installer (PowerShell)
+# Full-Context-Fork-Agent installer (PowerShell)
 # Sets CLAUDE_CODE_FORK_SUBAGENT=1 in ~/.claude/settings.json and installs all bundled skills.
 #
 # Requires PowerShell 7+. On Windows, install via:  winget install --id Microsoft.Powershell
@@ -25,7 +25,7 @@ $ErrorActionPreference = 'Stop'
 
 if ($Help) {
     @"
-Enable-Claude-Fork-Agent installer (PowerShell)
+Full-Context-Fork-Agent installer (PowerShell)
 
 Usage:
   ./install.ps1 [OPTIONS]
@@ -92,7 +92,7 @@ function Invoke-OrSay {
 # ---- Sub-commands ----
 
 function Invoke-Check {
-    Write-Host 'Enable-Claude-Fork-Agent — status check'
+    Write-Host 'Full-Context-Fork-Agent — status check'
     Write-Host '======================================='
     Write-Host ''
     Write-Host "settings.json:   $Settings"
@@ -141,7 +141,7 @@ function Get-LatestBackup {
 }
 
 function Invoke-Uninstall {
-    Write-Host 'Enable-Claude-Fork-Agent — uninstall'
+    Write-Host 'Full-Context-Fork-Agent — uninstall'
     Write-Host '===================================='
     Write-Host ''
 
@@ -197,7 +197,7 @@ function Invoke-Uninstall {
 }
 
 function Invoke-Install {
-    Write-Host 'Enable-Claude-Fork-Agent installer'
+    Write-Host 'Full-Context-Fork-Agent installer'
     Write-Host '=================================='
     if ($DryRun) { Write-Host '(dry-run: no files will be modified)' }
     Write-Host ''

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Enable-Claude-Fork-Agent — post-install verification.
+# Full-Context-Fork-Agent — post-install verification.
 # Exits 0 if all checks pass, non-zero otherwise.
 
 set -uo pipefail
@@ -23,7 +23,7 @@ check() {
   fi
 }
 
-echo "Enable-Claude-Fork-Agent verification"
+echo "Full-Context-Fork-Agent verification"
 echo "====================================="
 
 # 1. settings.json exists and parses as JSON

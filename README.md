@@ -1,21 +1,21 @@
-# <u>Claude-[Full-Context](https://github.com/Kirchlive/Claude-Full-Context-Agent)-Agent</u>
+# <u>[Full-Context](https://github.com/Kirchlive/Full-Context-Fork-Agent)-Fork-Agent</u>
 
 This Plugin switches Claude Code's default subagent process, from flawed context behavior, to fork-agents-mode with full session context, including Claude Skills for correct use of forks and worktrees.
 
-<img src="https://i.imgur.com/tnjhkDJ.png" alt="IMG" width="750">
+<img src="https://i.imgur.com/hpqRTjx.png" alt="IMG" width="750">
 
 > **v2.0.0 (2026-06-13) — Critical fix for Claude Code v2.1.177.**
 > If you ran v1.0.2 on Claude Code v2.1.177 and saw `Fork is not available inside a forked worker.` on every dispatch, this was an upstream runtime bug triggered by the literal boilerplate tag (`‹fork-boilerplate›`, shown here with Unicode angles so this README itself doesn't poison your session) in the previous skill texts. v2.0.0 escapes the tag everywhere so it no longer false-positive-matches the runtime's recursion guard. See [`UPDATE.md`](UPDATE.md) for the full root-cause and recovery steps for already-poisoned sessions.
 
 **Install:**
 ```
-/plugin marketplace add Kirchlive/Claude-Full-Context-Agent
-/plugin install Claude-Full-Context-Agent@Claude-Full-Context-Agent
+/plugin marketplace add Kirchlive/Full-Context-Fork-Agent
+/plugin install Full-Context-Fork-Agent@Full-Context-Fork-Agent
 ```
 
 **Verify:**
 ```
-/Claude-Full-Context-Agent:doctor
+/Full-Context-Fork-Agent:doctor
 ```
 
 Restart Claude Code.
@@ -27,7 +27,7 @@ Restart Claude Code.
 1. **Ships two skills**, auto-loaded the moment the plugin is enabled — no copying required:
    - **`prefer-fork-agents`** — the *decision* policy: when to fork vs. when to use a named subagent (default-deny mindset for named, with four documented exceptions).
    - **`fan-out-fork-agents`** — the *operational* patterns: how to coordinate multiple parallel forks (lifecycle, worktree hygiene, registry, reporting contract, federation pattern).
-2. **Provides the `/Claude-Full-Context-Agent:doctor` command**, which sets `CLAUDE_CODE_FORK_SUBAGENT=1` in `~/.claude/settings.json` — the one thing a plugin cannot do for itself (see below).
+2. **Provides the `/Full-Context-Fork-Agent:doctor` command**, which sets `CLAUDE_CODE_FORK_SUBAGENT=1` in `~/.claude/settings.json` — the one thing a plugin cannot do for itself (see below).
 
 ---
 
@@ -126,8 +126,8 @@ Behaviors that emerged from this usage — the 6-8 practical concurrency cap, th
 If you cloned the repo directly instead of installing via the marketplace:
 
 ```
-git clone https://github.com/Kirchlive/Claude-Full-Context-Agent.git
-cd Claude-Full-Context-Agent
+git clone https://github.com/Kirchlive/Full-Context-Fork-Agent.git
+cd Full-Context-Fork-Agent
 
 # macOS / Linux / WSL / Git Bash
 bash install.sh
@@ -150,7 +150,7 @@ Both back up your `settings.json`, merge `CLAUDE_CODE_FORK_SUBAGENT=1`, and run 
 **Plugin:**
 
 ```
-/plugin uninstall Claude-Full-Context-Agent@Claude-Full-Context-Agent
+/plugin uninstall Full-Context-Fork-Agent@Full-Context-Fork-Agent
 ```
 
 This removes the skills and the `/doctor` command. It does **not** remove the env var (a plugin can't touch user settings).

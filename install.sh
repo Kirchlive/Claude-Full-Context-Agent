@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Enable-Claude-Fork-Agent installer
+# Full-Context-Fork-Agent installer
 # Sets CLAUDE_CODE_FORK_SUBAGENT=1 in ~/.claude/settings.json and installs all bundled skills.
 #
 # Usage:
@@ -21,7 +21,7 @@ ENV_ONLY=0
 
 print_help() {
   cat <<'EOF'
-Enable-Claude-Fork-Agent installer
+Full-Context-Fork-Agent installer
 
 Usage:
   bash install.sh [OPTIONS]
@@ -96,7 +96,7 @@ write_or_say() {
 # ---- Sub-commands ----
 
 cmd_check() {
-  echo "Enable-Claude-Fork-Agent — status check"
+  echo "Full-Context-Fork-Agent — status check"
   echo "======================================="
   echo
   echo "settings.json:   $SETTINGS"
@@ -137,7 +137,7 @@ cmd_check() {
 }
 
 cmd_uninstall() {
-  echo "Enable-Claude-Fork-Agent — uninstall"
+  echo "Full-Context-Fork-Agent — uninstall"
   echo "===================================="
   echo
 
@@ -190,7 +190,7 @@ cmd_uninstall() {
 }
 
 cmd_install() {
-  echo "Enable-Claude-Fork-Agent installer"
+  echo "Full-Context-Fork-Agent installer"
   echo "=================================="
   if [ "$DRY_RUN" = "1" ]; then
     echo "(dry-run: no files will be modified)"

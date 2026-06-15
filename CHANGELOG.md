@@ -24,5 +24,5 @@ All notable changes to this project are documented here. Format follows [Keep a 
 
 Initial tagged release. See `docs/RELEASE-v1.0.0.md` (produced by the Phase 1 fork) for the full launch notes once reconciliation completes.
 
-[2.0.0]: https://github.com/Kirchlive/Claude-Full-Context-Agent/releases/tag/v2.0.0
-[1.0.0]: https://github.com/Kirchlive/Claude-Full-Context-Agent/releases/tag/v1.0.0
+[2.0.0]: https://github.com/Kirchlive/Full-Context-Fork-Agent/releases/tag/v2.0.0
+[1.0.0]: https://github.com/Kirchlive/Full-Context-Fork-Agent/releases/tag/v1.0.0

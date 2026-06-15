@@ -139,5 +139,5 @@ Issue tracker: <https://github.com/anthropics/claude-code/issues/68233>
 ## Versioning
 
 - **Affected:** Claude Code v2.1.177 (possibly earlier v2.1.x — not verified)
-- **Plugin patch:** `Claude-Full-Context-Agent` v2.0.0, released 2026-06-13
+- **Plugin patch:** `Full-Context-Fork-Agent` v2.0.0, released 2026-06-13
 - **Lift this workaround once:** Anthropic switches the guard to a structural match; until then, keep the escape in every skill source.
